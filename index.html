@@ -46,15 +46,38 @@
       <button type="submit">Get Result</button>
     </form>
   </div>
+  <div id="attack-alert">
+    <h2>Real-Time DDoS Attack Detection</h2>
+    <p>Status: <span id="status">Monitoring...</span></p>
+    <p>Suspicious IPs: <span id="ips">None</span></p>
+    <p>Traffic Rate: <span id="traffic-rate">Normal</span></p>
+  </div>
+
 
   <script>
-    const form = document.getElementById('resultForm');
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const name = document.getElementById('name').value;
-      const usn = document.getElementById('usn').value;
-      window.location.href = `result.html?name=${encodeURIComponent(name)}&usn=${encodeURIComponent(usn)}`;
-    });
+  // Simulate live updates for traffic detection
+  let statusElement = document.getElementById('status');
+  let ipsElement = document.getElementById('ips');
+  let trafficRateElement = document.getElementById('traffic-rate');
+
+  function updateTrafficStatus(status, ips, trafficRate) {
+    statusElement.textContent = status;
+    ipsElement.textContent = ips;
+    trafficRateElement.textContent = trafficRate;
+  }
+
+  // Simulate incoming traffic (for demo purposes)
+  let trafficCount = 0;
+  setInterval(() => {
+    trafficCount += 10;  // Increase the traffic count every 1 second (simulate real-time)
+    
+    if (trafficCount > 1000) {
+      updateTrafficStatus("DDoS Detected", "IP Blocked: 192.168.0.1", "High");
+    } else {
+      updateTrafficStatus("Normal", "None", "Normal");
+    }
+    
+  }, 1000);  // Update every second
   </script>
 </body>
 </html>
