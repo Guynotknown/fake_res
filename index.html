@@ -36,6 +36,18 @@
   </style>
 </head>
 <body>
+  <div style="max-width: 800px; margin: 40px auto; padding: 20px; background: #f9f9f9; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+  <h2 style="text-align: center; font-family: 'Segoe UI'; color: #333;">📊 Live Traffic Dashboard</h2>
+
+  <canvas id="trafficChart" height="200"></canvas>
+
+  <div style="margin-top: 30px; font-family: 'Segoe UI'; font-size: 18px;">
+    <p><strong>Status:</strong> <span id="status" style="color: green;">Normal</span></p>
+    <p><strong>Suspicious IPs:</strong> <span id="ips">None</span></p>
+    <p><strong>Traffic Rate:</strong> <span id="rate">0 req/sec</span></p>
+  </div>
+</div>
+
   <div class="container">
     <h2>CMRIT Result Portal</h2>
     <form id="resultForm">
@@ -54,30 +66,68 @@
   </div>
 
 
-  <script>
-  // Simulate live updates for traffic detection
-  let statusElement = document.getElementById('status');
-  let ipsElement = document.getElementById('ips');
-  let trafficRateElement = document.getElementById('traffic-rate');
 
-  function updateTrafficStatus(status, ips, trafficRate) {
-    statusElement.textContent = status;
-    ipsElement.textContent = ips;
-    trafficRateElement.textContent = trafficRate;
-  }
+ <!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  // Simulate incoming traffic (for demo purposes)
-  let trafficCount = 0;
-  setInterval(() => {
-    trafficCount += 10;  // Increase the traffic count every 1 second (simulate real-time)
-    
-    if (trafficCount > 1000) {
-      updateTrafficStatus("DDoS Detected", "IP Blocked: 192.168.0.1", "High");
-    } else {
-      updateTrafficStatus("Normal", "None", "Normal");
+<script>
+let trafficData = {
+    labels: [],
+    datasets: [{
+        label: 'Traffic Rate (req/sec)',
+        data: [],
+        borderColor: '#4CAF50',
+        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+        tension: 0.3
+    }]
+};
+
+let config = {
+    type: 'line',
+    data: trafficData,
+    options: {
+        responsive: true,
+        scales: {
+            x: {
+                title: { display: true, text: 'Time (hh:mm:ss)' }
+            },
+            y: {
+                beginAtZero: true,
+                title: { display: true, text: 'Requests per Second' }
+            }
+        }
     }
-    
-  }, 1000);  // Update every second
+};
+
+let trafficChart;
+
+document.addEventListener("DOMContentLoaded", function () {
+    const ctx = document.getElementById('trafficChart').getContext('2d');
+    trafficChart = new Chart(ctx, config);
+
+    setInterval(() => {
+        fetch('data.json')
+            .then(response => response.json())
+            .then(data => {
+                const now = new Date().toLocaleTimeString();
+                const traffic = data["traffic_rate"];
+
+                trafficData.labels.push(now);
+                trafficData.datasets[0].data.push(traffic);
+
+                if (trafficData.labels.length > 10) {
+                    trafficData.labels.shift();
+                    trafficData.datasets[0].data.shift();
+                }
+
+                trafficChart.update();
+
+                document.getElementById("status").innerText = data["status"];
+                document.getElementById("ips").innerText = data["suspicious_ips"] || "None";
+                document.getElementById("rate").innerText = data["traffic_rate"] + " req/sec";
+            });
+    }, 1000);
+});
   </script>
 </body>
 </html>
