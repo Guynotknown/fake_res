@@ -1,125 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CMRIT Result Portal</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f1f1f1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 50px;
-    }
-    .container {
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 400px;
-    }
-    input, button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-    button {
-      background: #007bff;
-      color: white;
-      cursor: pointer;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMRIT DDoS Traffic Monitor</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f7f7f7;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: linear-gradient(to right, #f0f0f0, #e0e0e0);
+            padding: 20px 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        header img {
+            height: 80px;
+            margin-bottom: 10px;
+        }
+        header h1 {
+            margin: 0;
+            font-family: 'Georgia', serif;
+            font-size: 32px;
+            color: #2c3e50;
+        }
+        section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+        .card {
+            background-color: #fdfdfd;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+        }
+        .card h2 {
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        .card input {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            outline: none;
+        }
+        #traffic-monitor {
+            padding: 40px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h2>CMRIT Result Portal</h2>
-    <form id="resultForm">
-      <label for="name">Name:</label>
-      <input type="text" id="name" required />
-      <label for="usn">USN:</label>
-      <input type="text" id="usn" required />
-      <button type="submit">Get Result</button>
-    </form>
-  </div>
-  <div style="max-width: 800px; margin: 40px auto; padding: 20px; background: #f9f9f9; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
-  <h2 style="text-align: center; font-family: 'Segoe UI'; color: #333;">📊 Live Traffic Dashboard</h2>
+    <header>
+        <img src="cmr_logo.png" alt="CMRIT Logo">
+        <h1>CMR Institute of Technology</h1>
+    </header>
 
-  <canvas id="trafficChart" height="200"></canvas>
+    <!-- Results Section -->
+    <section>
+        <div class="card">
+            <h2>Results</h2>
+            <form>
+                <input type="text" placeholder="Enter Roll No">
+            </form>
+        </div>
+    </section>
 
-  <div style="margin-top: 30px; font-family: 'Segoe UI'; font-size: 18px;">
-    <p><strong>Status:</strong> <span id="status" style="color: green;">Normal</span></p>
-    <p><strong>Suspicious IPs:</strong> <span id="ips">None</span></p>
-    <p><strong>Traffic Rate:</strong> <span id="rate">0 req/sec</span></p>
-  </div>
-</div>
+    <!-- Live Traffic Monitor Section -->
+    <section id="traffic-monitor">
+        <h2>Live Traffic Monitor</h2>
+        <canvas id="trafficChart" width="600" height="300"></canvas>
+    </section>
 
-
- <!-- Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-let trafficData = {
-    labels: [],
-    datasets: [{
-        label: 'Traffic Rate (req/sec)',
-        data: [],
-        borderColor: '#4CAF50',
-        backgroundColor: 'rgba(76, 175, 80, 0.1)',
-        tension: 0.3
-    }]
-};
-
-let config = {
-    type: 'line',
-    data: trafficData,
-    options: {
-        responsive: true,
-        scales: {
-            x: {
-                title: { display: true, text: 'Time (hh:mm:ss)' }
+    <script>
+        const ctx = document.getElementById('trafficChart').getContext('2d');
+        const trafficChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [], // Time
+                datasets: [{
+                    label: 'Packets/Second',
+                    data: [],
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.4
+                }]
             },
-            y: {
-                beginAtZero: true,
-                title: { display: true, text: 'Requests per Second' }
+            options: {
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Packets/sec'
+                        }
+                    }
+                }
             }
-        }
-    }
-};
+        });
 
-let trafficChart;
+        // Update graph with traffic data
+        async function updateChart() {
+            try {
+                const res = await fetch('traffic_data.json'); // Must be in same folder or use Flask to serve
+                const json = await res.json();
 
-document.addEventListener("DOMContentLoaded", function () {
-    const ctx = document.getElementById('trafficChart').getContext('2d');
-    trafficChart = new Chart(ctx, config);
-
-    setInterval(() => {
-        fetch('data.json')
-            .then(response => response.json())
-            .then(data => {
-                const now = new Date().toLocaleTimeString();
-                const traffic = data["traffic_rate"];
-
-                trafficData.labels.push(now);
-                trafficData.datasets[0].data.push(traffic);
-
-                if (trafficData.labels.length > 10) {
-                    trafficData.labels.shift();
-                    trafficData.datasets[0].data.shift();
+                if (trafficChart.data.labels.length > 20) {
+                    trafficChart.data.labels.shift();
+                    trafficChart.data.datasets[0].data.shift();
                 }
 
+                trafficChart.data.labels.push(json.time);
+                trafficChart.data.datasets[0].data.push(json.traffic);
                 trafficChart.update();
+            } catch (err) {
+                console.log("Waiting for data...");
+            }
+        }
 
-                document.getElementById("status").innerText = data["status"];
-                document.getElementById("ips").innerText = data["suspicious_ips"] || "None";
-                document.getElementById("rate").innerText = data["traffic_rate"] + " req/sec";
-            });
-    }, 1000);
-});
-  </script>
+        setInterval(updateChart, 1000);
+    </script>
 </body>
 </html>
+
